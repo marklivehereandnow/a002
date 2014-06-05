@@ -787,7 +787,7 @@ public class Ages implements AgesCommon {
         for (int k = 0; k < 13; k++) {
             ac = field.getCardRow().get(k);
             if (ac.getSeq() == seq) {
-                return act拿牌core(k);
+//                return act拿牌core(k);
             }
         }
 
@@ -856,17 +856,7 @@ public class Ages implements AgesCommon {
         return false;
     }
 
-    /**
-     * <br>1.Not to take NOCARD, including out of range and taken
-     * <br>2.Not allow to take card without enough civil points
-     * <br> including extra points for built Wonder
-     * <br>3.Not allow to take repeat tech card
-     * <br>4.Not allow to take wonder card if having any UNDER CONSTRUCTION
-     *
-     * @param val
-     * @return
-     */
-    private boolean act拿牌(int val) throws AgesException {
+    private boolean isAnExistingCard(int val) {
         // 1A
         if (val < 0 || val > 12) {
 //            System.out.println("這裡沒有牌");
@@ -894,14 +884,35 @@ public class Ages implements AgesCommon {
             return false;
 
         }
-        // 2
-        if (getCurrentPlayerRemainingCivilPoints() < get該牌需要支付多少內政點數(val)) {
+        return true;
+    }
+
+    /**
+     * <br>1.Not to take NOCARD, including out of range and taken
+     * <br>2.Not allow to take card without enough civil points
+     * <br> including extra points for built Wonder
+     * <br>3.Not allow to take repeat tech card
+     * <br>4.Not allow to take wonder card if having any UNDER CONSTRUCTION
+     *
+     * @param val
+     * @return
+     */
+    private boolean act拿牌(int val) throws AgesException {
+        // 1. NOT ALLOW TO TAKE INVALID CARD
+        if (!isAnExistingCard(val)) {
+            System.out.println("You are not taking a valid card from CardRow!");
+            return false;
+        }
+
+        // 2 NOT ALLOW TO TAKE CARD WITHOUT ENOUGH CIVIL POINT
+        int cost = get該牌需要支付多少內政點數(val);
+        if (getCurrentPlayerRemainingCivilPoints() < cost) {
             System.out.println("Current Player doesn't have ENOUGH 內政點數 to take this card");
             return false;
         }
 
-        // 3
-        //    如果這張牌是科技牌
+        // 3 Not to take repeat科技牌
+        AgesCard card = getCardFromCardRow(val);
         if (card.is科技牌()) {
 //            System.out.println("這是一張科技牌要寫程式不准拿重複");
             if (this.currentPlayer.is已有該張科技牌(card)) {
@@ -912,14 +923,16 @@ public class Ages implements AgesCommon {
         }
 
         //奇蹟 is the only one not go to ON-HAND
-        // 4.
-        if (currentPlayer.get建造中的奇蹟區().size() > 0) {
-            System.out.println("Not allow to take wonder card when UNDER CONSTRUCTION is not empty");
-            return false;
+        // 4. Not ALLOW to take 奇蹟 when there is any UNDER CONSTRUCTION
+        if (card.is奇蹟牌()) {
+            if (currentPlayer.get建造中的奇蹟區().size() > 0) {
+                System.out.println("Not allow to take wonder card when UNDER CONSTRUCTION is not empty");
+                return false;
+            }
         }
 
         // to perform real action
-        act拿牌core(val);
+        act拿牌core(val, cost, card);
 
         return true;
     }
@@ -936,16 +949,20 @@ public class Ages implements AgesCommon {
      * @return
      * <br>false: when taking NOCARD
      */
-    private boolean act拿牌core(int index) throws AgesException {
-        int cost = get該牌需要支付多少內政點數(index);
+    private boolean act拿牌core(int index, int cost, AgesCard card) throws AgesException {
+//        int cost = get該牌需要支付多少內政點數(index);
 //        AgesCard card = field.getCardRow().get(index);//宣告 card，並將卡牌列裡的指定編號的卡牌指定到這個card變量裡
-        AgesCard card = getTakingCard(index);
+//        AgesCard card = getTakingCard(index);
 
-        if (card.getTag().equals("奇蹟")) {// only Wonder card to 建造中的奇蹟區 directly
+        if (card.is奇蹟牌()) {// only Wonder card to 建造中的奇蹟區 directly
             currentPlayer.get建造中的奇蹟區().add(card);//當前玩家的手牌加入上一行的card
+//            moveOneCard(卡牌列, index, currentPlayer.get建造中的奇蹟區());
+
             currentPlayer.init建造中的奇蹟區();
         } else {//除了奇蹟牌以外
             currentPlayer.get手牌內政牌區().add(card);//當前玩家的手牌加入上一行的card
+//           moveOneCard(卡牌列, index, currentPlayer.get手牌內政牌區());
+
         }
         sub在卡牌列拿掉指定位子的卡牌and補上一張空卡牌(index);
         sub支付內政點數(cost);
@@ -955,10 +972,12 @@ public class Ages implements AgesCommon {
     private void sub在卡牌列拿掉指定位子的卡牌and補上一張空卡牌(int index) {
         field.getCardRow().remove(index);//從卡牌列拿掉剛剛那張card
         field.getCardRow().add(index, field.getNOCARD());//在卡牌列同樣的位子，補上一張空卡
+        System.out.println("卡牌列, index=" + index + " is 空卡牌 now!");
     }
 
     private void sub支付內政點數(int cost) {
         currentPlayer.pay內政點數(cost);
+        System.out.println("支付內政點數" + cost);
     }
 
     private boolean OLD_actTakeCard(int val) {
@@ -1906,11 +1925,8 @@ public class Ages implements AgesCommon {
         Token token藍;
 
 //        final int 人力庫_黃 = 1;
-
 //        final int 工人區_黃 = 2;
-
 //        final int 資源庫_藍 = 3;
-
         public Token getToken黃() {
 
             return token黃;
@@ -2116,7 +2132,7 @@ public class Ages implements AgesCommon {
             produce礦山();
             produce科技();
             produce農場();
-        
+
 //            Iterator iterator = token黃.getMap().entrySet().iterator();
 //
 //            while (iterator.hasNext()) {
@@ -2330,14 +2346,14 @@ public class Ages implements AgesCommon {
          * @param k
          */
         public void sub支付資源(int k) {
-            System.out.println("現在開始支付資源");
+//            System.out.println("現在開始支付資源");
             int val = k;
             for (int x = 0; x < this.礦山區.size(); x++) {
                 while ((val > 0) && (this.礦山區.get(x).getTokenBlue() != 0)) {
 //                    while ((val > 0)) {
-                    System.out.println("");
+//                    System.out.println("");
                     val = val - 礦山區.get(x).getEffectStone();
-                    System.out.println("還需支付的資源" + val);
+//                    System.out.println("還需支付的資源" + val);
                     礦山區.get(x).setTokenBlue(礦山區.get(x).getTokenBlue() - 1);
                     資源庫_藍點.addPoints(1);
 //                    System.out.println("減少");
@@ -2346,6 +2362,7 @@ public class Ages implements AgesCommon {
             if (val < 0) {
                 do獲得資源(-val);
             }
+            System.out.println("done, 支付資源:" + k);
         }
 
         public void set額外用於建造軍事單位的資源(Points 額外用於建造軍事單位的資源) {
@@ -2703,11 +2720,23 @@ public class Ages implements AgesCommon {
 //DOING 支付有效的代價
 //                this.礦山區.get(0).setTokenBlue(礦山區.get(0).getTokenBlue() - 1);
                 sub支付資源(required資源);
-                建造中的奇蹟區.get(0).setTokenBlue(建造中的奇蹟區.get(0).getTokenBlue() + 1);
+//                建造中的奇蹟區.get(0).setTokenBlue(建造中的奇蹟區.get(0).getTokenBlue() + 1);
+//                get資源庫_藍點().addPoints(-1);
+//                
+                subMove藍點From資源庫To卡牌(card);
+
                 wonderStages.remove(0);
-                this.內政點數.addPoints(-1);
+                sub支付內政點數(1);
+//                this.內政點數.addPoints(-1);
                 if (wonderStages.size() == 0) {
+                    System.out.println("going to move "+card.getTokenBlue()+"藍點From卡牌To資源庫");
+//                    for (int k = 0; k < card.getTokenBlue(); k++) {
+                        subMove藍點From卡牌To資源庫(card,card.getTokenBlue());
+//                    }
+
                     moveOneCard(建造中的奇蹟區, 0, 已完成的奇蹟);
+                    System.out.println("TRANSFER THIS WONDER FROM 建造中的奇蹟區 TO 已完成的奇蹟 ");
+
                     int temp = 內政手牌上限.getVal();
                     update手牌上限();
 //                    
@@ -2728,6 +2757,23 @@ public class Ages implements AgesCommon {
 //            System.out.println("your assigned ID " + id + " IS NOT FOUND???");
             System.out.println("??? HOW TO PREVENT PROGRAM TO CALL THIS WITHOUT CHECKING???ASSIGNED ID IS NOT IN 建造中的奇蹟區");
             return false;
+        }
+
+        private void subMove藍點From卡牌To資源庫(AgesCard card) {
+            card.setTokenBlue(card.getTokenBlue() - 1);
+            get資源庫_藍點().addPoints(+1);
+            System.out.println("move藍點From卡牌To資源庫");
+        }
+private void subMove藍點From卡牌To資源庫(AgesCard card, int cnt) {
+            card.setTokenBlue(card.getTokenBlue() - cnt);
+            get資源庫_藍點().addPoints(+cnt);
+            System.out.println("move " + cnt+"藍點 From卡牌To資源庫");
+        }
+
+        private void subMove藍點From資源庫To卡牌(AgesCard card) {
+            card.setTokenBlue(card.getTokenBlue() + 1);
+            get資源庫_藍點().addPoints(-1);
+            System.out.println("move藍點From資源庫To卡牌" + card.toString(STYLE_普通));
         }
 
         public boolean isBuild農場礦山(int id) {
@@ -3328,7 +3374,7 @@ public class Ages implements AgesCommon {
 
             內政手牌上限.setVal(white);
             軍事手牌上限.setVal(red);
-            this.建築上限.setVal(house);
+            建築上限.setVal(house);
 //        System.out.println("內政手牌上限，軍事手牌上限剛剛更新");
         }
 
@@ -3492,7 +3538,7 @@ public class Ages implements AgesCommon {
             showSector(政府區, "政府區");
             showSector(領袖區, "領袖區");
             showSector(建造中的奇蹟區, "建造中的奇蹟區");
-            show建造中的奇蹟區Stages();
+//            show建造中的奇蹟區Stages();
 
             showSector(實驗室, "實驗室");
             showSector(劇院區, "劇院區");

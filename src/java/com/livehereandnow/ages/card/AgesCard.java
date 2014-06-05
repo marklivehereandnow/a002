@@ -301,6 +301,12 @@ public class AgesCard implements Serializable, AgesCommon {
         }
         return false;
     }
+    public boolean is奇蹟牌() {
+        if (this.tag.equals("奇蹟")) {
+            return true;
+        }
+        return false;
+    }
 public boolean isNOCARD() {
         if (this.id== 1000) {
             return true;

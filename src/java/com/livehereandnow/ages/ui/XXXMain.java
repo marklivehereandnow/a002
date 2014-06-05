@@ -17,7 +17,7 @@ import javax.faces.bean.ManagedBean;
 
 @ManagedBean
 
-public class Main implements Serializable {
+public class XXXMain implements Serializable {
 
     private Ages engine;
     
@@ -73,14 +73,14 @@ private String strDebug;
     }
     
     
-    public Main() throws AgesException, IOException {
+    public XXXMain() throws AgesException, IOException {
         engine = new Ages();
         engine.doCmd("new-game");
        
     }
 
     public static void main(String[] args) throws IOException, AgesException {
-        new Main().runProgram();
+        new XXXMain().runProgram();
     
         
     }
