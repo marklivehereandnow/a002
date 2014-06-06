@@ -844,17 +844,18 @@ public class Ages implements AgesCommon {
 
     /**
      * Caller's responsibility to provide valid index
+     *
      * @param index
      * @return
-     * @throws AgesException 
+     * @throws AgesException
      */
     private int get卡牌列裡指定編號的卡牌需要支付多少內政點數卡牌列裡指定編號的卡牌_包括已完成的奇蹟(int index) throws AgesException {
         if (index < 0 || index > 12) { // simple protection
-            throw new AgesException("get卡牌列裡指定編號的卡牌需要支付多少內政點數卡牌列裡指定編號的卡牌_包括已完成的奇蹟(int index)=> "+ index +" is out of range");
+            throw new AgesException("get卡牌列裡指定編號的卡牌需要支付多少內政點數卡牌列裡指定編號的卡牌_包括已完成的奇蹟(int index)=> " + index + " is out of range");
         }
 
         int cost = COST_OF_TAKING_CARD_FROM_CARDROW[index];//basic 5,4,4
-        
+
         if (get卡牌列裡指定編號的卡牌(index).is奇蹟牌()) {
             cost += get當前玩家已完成的奇蹟數();
         }
@@ -1398,8 +1399,10 @@ public class Ages implements AgesCommon {
     }
 
     private String doPopulation() {
-        currentPlayer.act擴充人口();
-        return " just did 擴充人口";
+        if (currentPlayer.do擴充人口()){
+            return "done, just did 擴充人口";
+        }
+        return "no action";
     }
 
     private boolean actUpgrade(int p1, int p2) {
@@ -1519,8 +1522,8 @@ public class Ages implements AgesCommon {
                 getP1().do更新文明板塊上所提供的數據();
                 break;
             case 1005:
-                getP1().act擴充人口();
-                getP2().act擴充人口();
+                getP1().sub擴充人口();
+                getP2().sub擴充人口();
                 break;
             case 1006:
                 set當前操作玩家(currentPlayer);
@@ -1550,7 +1553,7 @@ public class Ages implements AgesCommon {
 
             case 1008:
 //                getP1().get內政區
-                getP2().act擴充人口();
+                getP2().sub擴充人口();
 
                 break;
             case 1019:
@@ -2168,8 +2171,9 @@ public class Ages implements AgesCommon {
 
         private void produce農場() {
             for (AgesCard card : 農場區) {
-                card.setTokenBlue(card.getTokenBlue() + card.getTokenYellow());
-                get資源庫_藍點().addPoints(-card.getTokenYellow());
+//                card.setTokenBlue(card.getTokenBlue() + card.getTokenYellow());
+//                get資源庫_藍點().addPoints(-card.getTokenYellow());
+                subMove資源庫藍點to卡牌(card, card.getTokenYellow());
             }
         }
 
@@ -2352,16 +2356,20 @@ public class Ages implements AgesCommon {
             return 額外用於建造軍事單位的資源;
         }
 
+        public void sub支付食物(int amt) {
+            System.out.println("TODO sub支付食物");
+        }
+
         /**
          * 給予方法int成本 參照該玩家面板上最好的方法支付資源 舉例:礦山等級(加權指數)/藍點 A(1)/5 I(2)/4 II(3)/1
          * III(5)/1 支付5點 A/0 I/4 II/1 III/1 支付6點>支付7點 A/0 I/3 II/1 III/1 獲得1點資源
          * A/1 I/3 II/1 III/1 === AAA === 資源:17 =(1*5) + (2*6) 食物:0
          *
-         * @param k
+         * @param amt
          */
-        public void sub支付資源(int k) {
+        public void sub支付資源(int amt) {
 //            System.out.println("現在開始支付資源");
-            int val = k;
+            int val = amt;
             for (int x = 0; x < this.礦山區.size(); x++) {
                 while ((val > 0) && (this.礦山區.get(x).getTokenBlue() != 0)) {
                     val = val - 礦山區.get(x).getEffectStone();
@@ -2374,7 +2382,7 @@ public class Ages implements AgesCommon {
             if (val < 0) {
                 sub獲得資源(-val);
             }
-            System.out.println("done, 支付資源:" + k);
+            System.out.println("done, 支付資源:" + amt);
         }
 
         public void set額外用於建造軍事單位的資源(Points 額外用於建造軍事單位的資源) {
@@ -2873,6 +2881,13 @@ public class Ages implements AgesCommon {
 
         }
 
+//        
+        public void subMove人力庫黃點to工人區() {
+            工人區_黃點.addPoints(1);//
+            人力庫_黃點.addPoints(-1);
+
+        }
+
         public void subMove卡牌黃點to工人區(AgesCard card) {
             工人區_黃點.addPoints(1);//玩家的工人區-1
             card.setTokenYellow(card.getTokenYellow() - 1);//指定的卡上黃點+1
@@ -3060,11 +3075,29 @@ public class Ages implements AgesCommon {
 
         }
 
-        public void act擴充人口() {
-            System.out.println("現在要擴充人口了");
+        public int get擴充人口支付食物數() {
+            System.out.println("TODO...get擴充人口支付食物數");
+            return 1;
+        }
+
+        public boolean do擴充人口() {
+            if (chk擴充人口()) {
+                sub擴充人口();
+                return true;
+            }
+            return false;
+        }
+
+        public void sub擴充人口() {
+            System.out.println("現在要擴充人口了 1. Pay one civil point 2.(TODO)PAY FOOD 3.move Yellow Token");
 //            this.農場區.get(0).setTokenYellow(this.農場區.get(0).getTokenYellow() + 1);
-            this.人力庫_黃點.addPoints(-1);
-            this.工人區_黃點.addPoints(1);
+//            this.人力庫_黃點.addPoints(-1);
+//            this.工人區_黃點.addPoints(1);
+            sub支付內政點數(1);
+//            System.out.println("(TODO)PAY FOOD");
+            int amt = get擴充人口支付食物數();
+            sub支付食物(amt);
+            subMove人力庫黃點to工人區();
 
         }
 
@@ -4131,6 +4164,14 @@ public class Ages implements AgesCommon {
             }
 
             return val;
+        }
+
+        private boolean chk擴充人口() {
+            System.out.println("TODO chk擴充人口 1");
+            System.out.println("TODO chk擴充人口 2");
+            System.out.println("TODO chk擴充人口 3");
+            return true;
+
         }
 
     }
