@@ -156,7 +156,7 @@ public class Ages implements AgesCommon {
             sb = new StringBuilder();
             sb.append(ages.get當前操作玩家().getName()).append("@");
             sb.append("回合");
-            sb.append(ages.getRound());
+            sb.append(ages.get當前回合());
             sb.append(ages.getCurrentPlayerName());
             sb.append(STAGE_NAME[ages.get現在階段()]);
             System.out.print(sb.toString() + "$ ");
@@ -204,8 +204,16 @@ public class Ages implements AgesCommon {
     public final int 政治階段 = 1;
     public final int 內政階段 = 2;
 
+    public int get當前回合() {
+        return round.getVal();
+    }
+
     public Points getRound() {
         return round;
+    }
+
+    public void setRound(Points round) {
+        this.round = round;
     }
 
     public int get現在階段() {
@@ -643,7 +651,7 @@ public class Ages implements AgesCommon {
 
             case "b":
             case "build":
-                if (this.getRound().getVal() == 1) {
+                if (this.get當前回合() == 1) {
                     System.out.println("按遊戲規則:第一回合，只能拿牌，不能做建造");
                     return false;
                 }
@@ -660,7 +668,7 @@ public class Ages implements AgesCommon {
             case "play":
             case "play-card":
             case "out-card":
-                if (this.getRound().getVal() == 1) {
+                if (this.get當前回合() == 1) {
                     System.out.println("按遊戲規則:第一回合，只能拿牌，不能做打牌");
                     return false;
                 }
@@ -678,7 +686,7 @@ public class Ages implements AgesCommon {
                 return act拿牌(val);
             case "destroy":
             case "d":
-                if (this.getRound().getVal() == 1) {
+                if (this.get當前回合() == 1) {
                     System.out.println("按遊戲規則:第一回合，只能拿牌，不能做摧毀");
                     return false;
                 }
@@ -753,7 +761,7 @@ public class Ages implements AgesCommon {
      */
     private boolean act打牌(int index) {
         // 1
-        if (index > currentPlayer.get手牌內政牌區().size() - 1) {
+        if (index > currentPlayer.get手牌內政牌區().size() - 1 || index < 0) {
             System.out.println("我無法作出這個動作，我這個位置沒有牌");
             return false;
         }
@@ -766,11 +774,27 @@ public class Ages implements AgesCommon {
         // 3     
         AgesCard card = currentPlayer.手牌內政牌區.get(index);
 //        System.out.println(""+card.getCostRevolution());
-        if (currentPlayer.get科技().getVal() < card.getCostIdea()) {
-            System.out.println("打出這張牌需要花費(" + card.getCostIdea() + ")科技");
-            System.out.println("我無法作出這個動作，NOT ENOUGH 科技 FOR THIS act打牌 ");
+        if (card.is科技牌()) {
+            if (currentPlayer.get科技().getVal() < card.getCostIdea()) {
+                System.out.println("打出這張牌需要花費(" + card.getCostIdea() + ")科技");
+                System.out.println("我無法作出這個動作，NOT ENOUGH 科技 FOR THIS act打牌 ");
 
-            return false;
+                return false;
+            }
+        }
+// 4     
+        //    AgesCard card = currentPlayer.手牌內政牌區.get(index);
+//        System.out.println(""+card.getCostRevolution());
+        if (card.is行動牌()) {
+            System.out.println("card.is行動牌() "
+                    + " card.get拿牌回合() is " + card.get拿牌回合()
+                    + " get當前回合().getVal() is " + get當前回合());
+
+            if (card.get拿牌回合() >= get當前回合()) {
+                System.out.println("YOU CANNOT TAKE AND PLAY GIVEN 行動牌 WITHIN SAME ROUND!");
+                return false;
+            }
+
         }
 
         act打牌core(index);
@@ -898,6 +922,12 @@ public class Ages implements AgesCommon {
      * @return
      */
     private boolean act拿牌(int val) throws AgesException {
+        //
+        if (field.getCardRow().size() == 0) {
+            System.out.println("NO CARD TO TAKE, YOU NEED TO START GAME FIRST!");
+            return false;
+        }
+
         // 1. NOT ALLOW TO TAKE INVALID CARD
         if (!isAnExistingCard(val)) {
             System.out.println("You are not taking a valid card from CardRow!");
@@ -966,6 +996,7 @@ public class Ages implements AgesCommon {
         }
         sub在卡牌列拿掉指定位子的卡牌and補上一張空卡牌(index);
         sub支付內政點數(cost);
+        card.set拿牌回合(round.getVal());
         return true;
     }
 
@@ -1113,14 +1144,14 @@ public class Ages implements AgesCommon {
         //腐敗();
         交換玩家();
         // before turn
-        if (getRound().getVal() == 1) {
+        if (get當前回合() == 1) {
             return "this round#1 case, not to update手牌上限 refill內政點數軍事點數";
         }
 
         currentPlayer.update手牌上限();
         currentPlayer.refill內政點數軍事點數();
         補牌();
-        if (getRound().getVal() > 2) {
+        if (get當前回合() > 2) {
             set現在階段(政治階段);
         } else {
             set現在階段(內政階段);
@@ -2129,9 +2160,11 @@ public class Ages implements AgesCommon {
 
         public void produce() {
             produce文化();
-            produce礦山();
             produce科技();
             produce農場();
+            System.out.println("done,農場 執行生產");
+            System.out.println("TODO..., PAY FOOD!!!");
+            produce礦山();
 
 //            Iterator iterator = token黃.getMap().entrySet().iterator();
 //
@@ -2163,8 +2196,10 @@ public class Ages implements AgesCommon {
 
         private void produce礦山() {
             for (AgesCard card : 礦山區) {
-                card.setTokenBlue(card.getTokenBlue() + card.getTokenYellow());
-                get資源庫_藍點().addPoints(-card.getTokenYellow());
+
+//                card.setTokenBlue(card.getTokenBlue() + card.getTokenYellow());
+//                get資源庫_藍點().addPoints(-card.getTokenYellow());
+                subMove資源庫藍點to卡牌(card, card.getTokenYellow());
             }
         }
 
@@ -2350,13 +2385,11 @@ public class Ages implements AgesCommon {
             int val = k;
             for (int x = 0; x < this.礦山區.size(); x++) {
                 while ((val > 0) && (this.礦山區.get(x).getTokenBlue() != 0)) {
-//                    while ((val > 0)) {
-//                    System.out.println("");
                     val = val - 礦山區.get(x).getEffectStone();
 //                    System.out.println("還需支付的資源" + val);
-                    礦山區.get(x).setTokenBlue(礦山區.get(x).getTokenBlue() - 1);
-                    資源庫_藍點.addPoints(1);
-//                    System.out.println("減少");
+//                    礦山區.get(x).setTokenBlue(礦山區.get(x).getTokenBlue() - 1);
+//                    資源庫_藍點.addPoints(1);
+                    subMove卡牌藍點to資源庫(礦山區.get(x), 1);
                 }
             }
             if (val < 0) {
@@ -2723,15 +2756,16 @@ public class Ages implements AgesCommon {
 //                建造中的奇蹟區.get(0).setTokenBlue(建造中的奇蹟區.get(0).getTokenBlue() + 1);
 //                get資源庫_藍點().addPoints(-1);
 //                
-                subMove藍點From資源庫To卡牌(card);
 
                 wonderStages.remove(0);
+                // PUT ONE BLUE TOKEN ON CONSTRUCTING CARD, MEANS JUST ONE STAGE
+                subMove資源庫藍點to卡牌(card, 1);
                 sub支付內政點數(1);
 //                this.內政點數.addPoints(-1);
                 if (wonderStages.size() == 0) {
-                    System.out.println("going to move "+card.getTokenBlue()+"藍點From卡牌To資源庫");
+                    System.out.println("going to move " + card.getTokenBlue() + "藍點From卡牌To資源庫");
 //                    for (int k = 0; k < card.getTokenBlue(); k++) {
-                        subMove藍點From卡牌To資源庫(card,card.getTokenBlue());
+                    subMove卡牌藍點to資源庫(card, card.getTokenBlue());
 //                    }
 
                     moveOneCard(建造中的奇蹟區, 0, 已完成的奇蹟);
@@ -2759,21 +2793,22 @@ public class Ages implements AgesCommon {
             return false;
         }
 
-        private void subMove藍點From卡牌To資源庫(AgesCard card) {
-            card.setTokenBlue(card.getTokenBlue() - 1);
-            get資源庫_藍點().addPoints(+1);
-            System.out.println("move藍點From卡牌To資源庫");
-        }
-private void subMove藍點From卡牌To資源庫(AgesCard card, int cnt) {
-            card.setTokenBlue(card.getTokenBlue() - cnt);
-            get資源庫_藍點().addPoints(+cnt);
-            System.out.println("move " + cnt+"藍點 From卡牌To資源庫");
+//        private void subMove卡牌藍點to資源庫(AgesCard card) {
+//
+////            card.setTokenBlue(card.getTokenBlue() - 1);
+////            get資源庫_藍點().addPoints(+1);
+////            System.out.println("move藍點From卡牌To資源庫");
+//        }
+        private void subMove卡牌藍點to資源庫(AgesCard card, int amount) {
+            card.setTokenBlue(card.getTokenBlue() - amount);
+            get資源庫_藍點().addPoints(+amount);
+//            System.out.println("move " + amount + "藍點 From卡牌To資源庫");
         }
 
-        private void subMove藍點From資源庫To卡牌(AgesCard card) {
-            card.setTokenBlue(card.getTokenBlue() + 1);
-            get資源庫_藍點().addPoints(-1);
-            System.out.println("move藍點From資源庫To卡牌" + card.toString(STYLE_普通));
+        private void subMove資源庫藍點to卡牌(AgesCard card, int amount) {
+            card.setTokenBlue(card.getTokenBlue() + amount);
+            get資源庫_藍點().addPoints(-amount);
+//            System.out.println("move藍點From資源庫To卡牌" + card.toString(STYLE_普通));
         }
 
         public boolean isBuild農場礦山(int id) {
@@ -2842,6 +2877,24 @@ private void subMove藍點From卡牌To資源庫(AgesCard card, int cnt) {
             return false;
         }
 
+        public void subMove工人區黃點to卡牌(AgesCard card) {
+            工人區_黃點.addPoints(-1);//玩家的工人區-1
+            card.setTokenYellow(card.getTokenYellow() + 1);//指定的卡上黃點+1
+
+        }
+
+        public void subMove卡牌黃點to工人區(AgesCard card) {
+            工人區_黃點.addPoints(1);//玩家的工人區-1
+            card.setTokenYellow(card.getTokenYellow() - 1);//指定的卡上黃點+1
+
+        }
+
+        public void subMove卡牌黃點to卡牌(AgesCard cardFrom, AgesCard cardTo) {
+            cardFrom.setTokenYellow(cardFrom.getTokenYellow() - 1);//指定的卡上黃點+1
+            cardTo.setTokenYellow(cardTo.getTokenYellow() + 1);//指定的卡上黃點+1
+
+        }
+
         public boolean actBuild農場礦山core(int id) {
             List<AgesCard> buildList = new ArrayList<>();
             buildList.addAll(農場區);
@@ -2855,9 +2908,9 @@ private void subMove藍點From卡牌To資源庫(AgesCard card, int cnt) {
                     this.內政點數.addPoints(-1);
 
                     // 2.黃點
-                    this.工人區_黃點.addPoints(-1);//玩家的工人區-1
-                    card.setTokenYellow(card.getTokenYellow() + 1);//指定的卡上黃點+1
-
+//                    this.工人區_黃點.addPoints(-1);//玩家的工人區-1
+//                    card.setTokenYellow(card.getTokenYellow() + 1);//指定的卡上黃點+1
+                    subMove工人區黃點to卡牌(card);
                     // 3. 支付石頭
                     this.礦山區.get(0).setTokenBlue(礦山區.get(0).getTokenBlue() - card.getCostStone());
                     //增加資源庫的藍點
