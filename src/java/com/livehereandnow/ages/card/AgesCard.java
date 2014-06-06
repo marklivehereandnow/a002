@@ -196,6 +196,17 @@ public class AgesCard implements Serializable, AgesCommon {
 //    @Column(name = "COST_MUSIC")
     private int costMusic;
 
+    private int roundTaken=999;
+
+    public int get拿牌回合() {
+        return roundTaken;
+    }
+
+    public void set拿牌回合(int roundTaken) {
+        this.roundTaken = roundTaken;
+    }
+    
+    
     public AgesCard() {
     }
 
@@ -303,6 +314,12 @@ public class AgesCard implements Serializable, AgesCommon {
     }
     public boolean is奇蹟牌() {
         if (this.tag.equals("奇蹟")) {
+            return true;
+        }
+        return false;
+    }
+        public boolean is行動牌() {
+        if (this.tag.equals("行動")) {
             return true;
         }
         return false;

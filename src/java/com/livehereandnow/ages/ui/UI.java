@@ -83,7 +83,7 @@ public class UI {
     }
 
     public int getRoundNumber() {
-        return engine.getRound().getVal();
+        return engine.get當前回合();
     }
 
     public String getCurrentPlayer() {
