@@ -794,6 +794,23 @@ public boolean isNOCARD() {
         return sb.toString();
     }
 
+    private String toString普通_藍點() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("【");
+//        sb.append(AGE_NAME[age]);
+        sb.append("");
+        sb.append(id);
+        sb.append(name);
+//        sb.append(FULLWIDTH_SPACE).append(tag);
+//        sb.append(FULLWIDTH_SPACE).append("成本{").append(iconPoints).append("}");
+//        sb.append(FULLWIDTH_SPACE).append("效果{").append(effect).append("}");
+//     
+        sb.append(FULLWIDTH_SPACE).append("藍").append(FULLWIDTH_COLON).append(tokenBlue);
+
+        sb.append("】");
+        return sb.toString();
+    }
+
     public String toString(int style) {
 
         switch (style) {
@@ -809,6 +826,8 @@ public boolean isNOCARD() {
                 return toString實驗室();
             case STYLE_行動牌:
                 return toString行動牌();
+            case STYLE_普通_藍點:
+                return toString普通_藍點();
             default:
                 return toStringSimple();
         }

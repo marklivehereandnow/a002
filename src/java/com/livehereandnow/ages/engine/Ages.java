@@ -11,6 +11,8 @@ import com.livehereandnow.ages.card.AgesCardFactory;
 import com.livehereandnow.ages.card.AgesCommon;
 import static com.livehereandnow.ages.card.AgesCommon.STYLE_實驗室;
 import static com.livehereandnow.ages.card.AgesCommon.STYLE_政府區;
+import static com.livehereandnow.ages.card.AgesCommon.STYLE_普通;
+import static com.livehereandnow.ages.card.AgesCommon.STYLE_普通_藍點;
 import static com.livehereandnow.ages.card.AgesCommon.STYLE_領袖區;
 import com.livehereandnow.ages.card.DoneDescription;
 import com.livehereandnow.ages.card.ReasonWhyNoAction;
@@ -1988,9 +1990,9 @@ public class Ages implements AgesCommon {
         }
 
         public void sub支付內政點數(int cost) {
-            int old內政點數=內政點數.getVal();
+            int old內政點數 = 內政點數.getVal();
             內政點數.addPoints((-1) * cost);
-            showDebug("內政點數 "+old內政點數+" => "+ 內政點數.getVal());
+            showDebug("內政點數 " + old內政點數 + " => " + 內政點數.getVal());
         }
 
         public Points get內政點數() {
@@ -2217,8 +2219,8 @@ public class Ages implements AgesCommon {
             produce文化();
             produce科技();
             produce農場();
-            System.out.println("done,農場 執行生產");
-            System.out.println("TODO..., PAY FOOD!!!");
+            showDoneDescription(DoneDescription.農場_執行生產);
+            showDebug("#################3TODO..., PAY FOOD!!!");
             produce礦山();
 
 //            Iterator iterator = token黃.getMap().entrySet().iterator();
@@ -2792,8 +2794,15 @@ public class Ages implements AgesCommon {
         }
 
         private void subMove資源庫藍點to卡牌(AgesCard card, int amount) {
+            showDebug(" before " + card.toString(STYLE_普通_藍點));
+            showDebug(" before 資源庫_藍點=" + get資源庫_藍點().getVal());
+
             card.setTokenBlue(card.getTokenBlue() + amount);
             get資源庫_藍點().addPoints(-amount);
+
+            showDebug(" after " + card.toString(STYLE_普通_藍點) );
+            showDebug(" after 資源庫_藍點=" + get資源庫_藍點().getVal());
+
 //            System.out.println("move藍點From資源庫To卡牌" + card.toString(STYLE_普通));
         }
 
@@ -3918,7 +3927,8 @@ public class Ages implements AgesCommon {
         }
 
         public void compute當回合文化and科技and軍力() {
-            System.out.println("compute當回合文化and科技");
+            showDebug("compute當回合文化and科技");
+
             // 1. Prepare source
             List<AgesCard> list = new ArrayList<>();
 
@@ -3940,18 +3950,18 @@ public class Ages implements AgesCommon {
                 if (card.getTokenYellow() > 0) {
 
                     if (card.getEffectMusic() != 0) {
-                        System.out.println(".....getEffectMusic " + card.toString(103));
+                        showDebug("check EffectMusic " + card.toString(103));
 
                         音樂 += card.getEffectMusic();
                     }
                     if (card.getEffectIdea() != 0) {
 
-                        System.out.println("######getEffectIdea " + card.toString(103));
+                        showDebug("check EffectIdea " + card.toString(103));
                         燈泡 += card.getEffectIdea();
                     }
                     if (card.getEffectWeapon() != 0) {
 
-                        System.out.println("@@@@getEffectWeapon " + card.toString(103));
+                        showDebug("check EffectWeapon " + card.toString(103));
                         武器 += card.getEffectWeapon();
                     }
                 }
@@ -3959,9 +3969,23 @@ public class Ages implements AgesCommon {
             }
 
             // 3. Update result
-            文化生產_當回合.setVal(音樂);
-            科技生產_當回合.setVal(燈泡);
-            軍力.setVal(武器);
+            int old音樂 = 文化生產_當回合.getVal();
+            int old燈泡 = 科技生產_當回合.getVal();
+            int old武器 = 軍力.getVal();
+
+            if (old音樂 != 音樂) {
+                文化生產_當回合.setVal(音樂);
+                showDebug("文化生產_當回合 " + old音樂 + " => " + 音樂);
+            }
+            if (old燈泡 != 燈泡) {
+
+                科技生產_當回合.setVal(燈泡);
+                showDebug("科技生產_當回合 " + old燈泡 + " => " + 燈泡);
+            }
+            if (old武器 != 武器) {
+                軍力.setVal(武器);
+                showDebug("軍力 " + old武器 + " => " + 軍力);
+            }
 
         }
 
