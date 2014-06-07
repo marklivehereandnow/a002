@@ -14,6 +14,7 @@ public enum ReasonWhyNoAction {
     GAME_IS_NOT_STARTED_YET,
     NOT_VALID_INDEX_FROM_CARDROW,
     內政點數不够,
+    資源不够,
     拿了重複的科技牌,
     UNDER_CONSTRUCTION_IS_NOT_EMPTY,
     NOT_THE_奇蹟CARD_UNDER_CONSTRUCTION,

@@ -12,6 +12,10 @@ package com.livehereandnow.ages.card;
  */
 public enum DoneDescription {
     BUILD_ONE_STAGE_WONDER,
+    COMPLETE_ONE_WONDER,
+    內政手牌上限_UPDATED,
+    軍事手牌上限_UPDATED,
+    建築上限_UPDATED,
     
     NOT_YET_DEFINED;
 }
