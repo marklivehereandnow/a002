@@ -2038,6 +2038,25 @@ public class Ages implements AgesCommon {
             }
         }
 
+        public void sub獲得食物(int val) {
+            showDebug("DOING...sub獲得食物" + val);
+            for (int x = 農場區.size() - 1; x >= 0; x--) {
+                showDebug("獲得[" + val + "]點資源");
+                showDebug("這是" + 農場區.get(x).getAge() + "的FOOD");
+
+                //設定礦山藍點為 原本藍點+獲得藍點/礦山效果:石頭
+                showDebug("目標藍點=" + this.農場區.get(x).getEffectFood() + " food");
+                showDebug("現在有" + this.農場區.get(x).getTokenBlue() + "點藍點，要+" + val / 農場區.get(x).getEffectFood() + "個藍點");
+                礦山區.get(x).setTokenBlue(農場區.get(x).getTokenBlue() + (val / 礦山區.get(x).getEffectFood()));
+
+//            System.out.println("現在將時代"+礦山區.get(x).getAge()+"的礦山放入"+val/this.礦山區.get(x).getEffectStone()+"個藍點");
+                val = val % 農場區.get(x).getEffectFood();
+
+                showDebug("剩下[" + val + "]點資源要處理");
+
+            }
+        }
+
         public Points get建築上限() {
             return 建築上限;
         }
@@ -2390,6 +2409,15 @@ public class Ages implements AgesCommon {
             return val;
         }
 
+        public int getAvailable食物() {
+            int val = 0;
+            for (int x = 0; x < this.農場區.size(); x++) {
+                val = val + 農場區.get(x).getTokenBlue() * 農場區.get(x).getEffectFood();
+            }
+//            System.out.println("玩家目前有 " + val + " 點資源");
+            return val;
+        }
+
         public String get資源明細() {
             int val = 0;
 //            int val
@@ -2445,10 +2473,9 @@ public class Ages implements AgesCommon {
             return 額外用於建造軍事單位的資源;
         }
 
-        public void sub支付食物(int amt) {
-            System.out.println("TODO sub支付食物");
-        }
-
+//        public void sub支付食物(int amt) {
+//            System.out.println("############### TODO sub支付食物 ##############3");
+//        }
         /**
          * 給予方法int成本 參照該玩家面板上最好的方法支付資源 舉例:礦山等級(加權指數)/藍點 A(1)/5 I(2)/4 II(3)/1
          * III(5)/1 支付5點 A/0 I/4 II/1 III/1 支付6點>支付7點 A/0 I/3 II/1 III/1 獲得1點資源
@@ -2472,6 +2499,25 @@ public class Ages implements AgesCommon {
                 sub獲得資源(-val);
             }
 //            System.out.println("done, 支付資源:" + amt);
+        }
+
+        public void sub支付食物(int amt) {
+//            System.out.println("現在開始支付資源");
+            int val = amt;
+            for (int x = 0; x < this.農場區.size(); x++) {
+                while ((val > 0) && (this.農場區.get(x).getTokenBlue() != 0)) {
+                    val = val - 農場區.get(x).getEffectFood();
+//                    System.out.println("還需支付的資源" + val);
+//                    礦山區.get(x).setTokenBlue(礦山區.get(x).getTokenBlue() - 1);
+//                    資源庫_藍點.addPoints(1);
+                    subMove卡牌藍點to資源庫(農場區.get(x), 1);
+                }
+            }
+            if (val < 0) {
+                sub獲得食物(-val);
+            }
+//            System.out.println("done, 支付資源:" + amt);
+            showDoneDescription(DoneDescription.PAY_FOOD);
         }
 
         public void set額外用於建造軍事單位的資源(Points 額外用於建造軍事單位的資源) {
@@ -2886,7 +2932,7 @@ public class Ages implements AgesCommon {
                     }
                     if (currentPlayer.工人區_黃點.getVal() < 1) {
 //                        System.out.println("no action, 你的工人區【黃】沒人");
-                        showWhyNoAction(ReasonWhyNoAction.你的工人區沒人);
+                        showWhyNoAction(ReasonWhyNoAction.工人區沒人);
                         break;
                     }
                     return card;
@@ -2957,7 +3003,7 @@ public class Ages implements AgesCommon {
             }
 
             if (工人區_黃點.getVal() < 1) {
-                showWhyNoAction(ReasonWhyNoAction.你的工人區沒人);
+                showWhyNoAction(ReasonWhyNoAction.工人區沒人);
                 return false;
             }
 
@@ -2984,8 +3030,10 @@ public class Ages implements AgesCommon {
 
 //        
         public void subMove人力庫黃點to工人區() {
+            showDebug("subMove人力庫黃點to工人區() before 工人區_黃點=" + 工人區_黃點.getVal() + " 人力庫_黃點" + 人力庫_黃點.getVal());
             工人區_黃點.addPoints(1);//
             人力庫_黃點.addPoints(-1);
+            showDebug("subMove人力庫黃點to工人區()  after 工人區_黃點=" + 工人區_黃點.getVal() + " 人力庫_黃點" + 人力庫_黃點.getVal());
 
         }
 
@@ -3172,13 +3220,8 @@ public class Ages implements AgesCommon {
 
         }
 
-        public int get擴充人口支付食物數() {
-            System.out.println("TODO...get擴充人口支付食物數");
-            return 1;
-        }
-
         public boolean do擴充人口() {
-            if (chk擴充人口()) {
+            if (isOk擴充人口()) {
                 sub擴充人口();
                 return true;
             }
@@ -3186,13 +3229,15 @@ public class Ages implements AgesCommon {
         }
 
         public void sub擴充人口() {
-            System.out.println("現在要擴充人口了 1. Pay one civil point 2.(TODO)PAY FOOD 3.move Yellow Token");
+            showDebug("DOING...sub擴充人口");
+//            System.out.println("現在要擴充人口了 1. Pay one civil point 2.(TODO)PAY FOOD 3.move Yellow Token");
 //            this.農場區.get(0).setTokenYellow(this.農場區.get(0).getTokenYellow() + 1);
 //            this.人力庫_黃點.addPoints(-1);
 //            this.工人區_黃點.addPoints(1);
             sub支付內政點數(1);
 //            System.out.println("(TODO)PAY FOOD");
-            int amt = get擴充人口支付食物數();
+            int amt = get擴充人口需要支付食物();
+            showDebug("DOING...sub擴充人口  going sub支付食物" + amt);
             sub支付食物(amt);
             subMove人力庫黃點to工人區();
 
@@ -4296,10 +4341,58 @@ public class Ages implements AgesCommon {
             return val;
         }
 
-        private boolean chk擴充人口() {
-            System.out.println("TODO chk擴充人口 1");
-            System.out.println("TODO chk擴充人口 2");
-            System.out.println("TODO chk擴充人口 3");
+        private int get擴充人口需要支付食物() {
+            int remaining = 人力庫_黃點.getVal();
+            switch (remaining) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    return 7;
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                    return 5;
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                    return 4;
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                    return 3;
+                case 17:
+                case 18:
+                    return 2;
+                default:
+                    return 999;
+            }
+        }
+
+        private boolean isOk擴充人口() {
+//            System.out.println("TODO isOk擴充人口 1");
+//            System.out.println("TODO isOk擴充人口 2");
+//            System.out.println("TODO isOk擴充人口 3");
+
+            if (get內政點數().getVal() < 1) {
+                showWhyNoAction(ReasonWhyNoAction.內政點數不够);
+                return false;
+            }
+            if (getAvailable食物() < get擴充人口需要支付食物()) {
+                showWhyNoAction(ReasonWhyNoAction.食物不够);
+                showDebug("getAvailable食物()=" + getAvailable食物());
+                showDebug("get擴充人口需要支付食物()=" + get擴充人口需要支付食物());
+
+                return false;
+            }
+            if (人力庫_黃點.getVal() < 1) {
+                showWhyNoAction(ReasonWhyNoAction.工人區沒人);
+                return false;
+
+            }
             return true;
 
         }

@@ -17,8 +17,11 @@ public enum ReasonWhyNoAction {
     NOT_VALID_INDEX_FROM_CARDROW,
     內政點數不够,
     資源不够,
+    食物不够,
+    
     拿了重複的科技牌,
-    你的工人區沒人,
+    工人區沒人,
+    人力庫沒人,
     UNDER_CONSTRUCTION_IS_NOT_EMPTY,
     NOT_THE_奇蹟CARD_UNDER_CONSTRUCTION,
     NOT_YET_DEFINED;

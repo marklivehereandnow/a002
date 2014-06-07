@@ -782,7 +782,7 @@ public boolean isNOCARD() {
     private String toStringSimple() {
         StringBuilder sb = new StringBuilder();
         sb.append("【");
-//        sb.append(AGE_NAME[age]);
+        sb.append(AGE_NAME[age]);
         sb.append("");
         sb.append(id);
         sb.append(name);
@@ -797,7 +797,7 @@ public boolean isNOCARD() {
     private String toString普通_藍點() {
         StringBuilder sb = new StringBuilder();
         sb.append("【");
-//        sb.append(AGE_NAME[age]);
+        sb.append(AGE_NAME[age]);
         sb.append("");
         sb.append(id);
         sb.append(name);
@@ -813,7 +813,7 @@ public boolean isNOCARD() {
 private String toString普通_黃點() {
         StringBuilder sb = new StringBuilder();
         sb.append("【");
-//        sb.append(AGE_NAME[age]);
+        sb.append(AGE_NAME[age]);
         sb.append("");
         sb.append(id);
         sb.append(name);

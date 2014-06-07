@@ -18,6 +18,6 @@ public enum DoneDescription {
     內政手牌上限_UPDATED,
     軍事手牌上限_UPDATED,
     建築上限_UPDATED,
-    
+    PAY_FOOD,
     NOT_YET_DEFINED;
 }
