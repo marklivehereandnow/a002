@@ -35,6 +35,8 @@ public interface AgesCommon {
     int STYLE_行動牌 = 105;
     int STYLE_普通 = 999;
     int STYLE_普通_藍點 = 1001;
+    int STYLE_普通_黃點 = 1002;
+    
 //    String[] AGE_NAME = {"\uFF21", "\uFF29", "\uFF29\uFF29", "\uFF29\uFF29\uFF29"};//http://www.unicode.org/charts/PDF/UFF00.pdf
     String[] AGE_NAME = {"\uFF21", "I ", "II ", "III "};//http://www.unicode.org/charts/PDF/UFF00.pdf
     final String[] STAGE_NAME = {" ", "政治", "內政"};

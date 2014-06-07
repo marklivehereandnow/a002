@@ -490,8 +490,8 @@ public class Ages implements AgesCommon {
             setDebgug(feedback);
 
             System.out.println("123456789");
-            getP1().do更新文明板塊上所提供的數據();
-            getP2().do更新文明板塊上所提供的數據();
+            getP1().sub更新文明板塊上所提供的數據();
+            getP2().sub更新文明板塊上所提供的數據();
 
             return true;
         }
@@ -536,8 +536,8 @@ public class Ages implements AgesCommon {
 //        setFeedback();
         setDebgug("[parser]: unknown command," + cmd + ", just ignore it!");
         System.out.println("123456789");
-        getP1().do更新文明板塊上所提供的數據();
-        getP2().do更新文明板塊上所提供的數據();
+        getP1().sub更新文明板塊上所提供的數據();
+        getP2().sub更新文明板塊上所提供的數據();
         return false;
 
     }
@@ -567,8 +567,8 @@ public class Ages implements AgesCommon {
     public String doCmd(String keyword) throws IOException, AgesException {
         switch (keyword) {
             case "9999":
-                getP1().do更新文明板塊上所提供的數據();
-                getP2().do更新文明板塊上所提供的數據();
+                getP1().sub更新文明板塊上所提供的數據();
+                getP2().sub更新文明板塊上所提供的數據();
                 return "9999";
             case "server":
 
@@ -1542,7 +1542,7 @@ public class Ages implements AgesCommon {
                 System.out.println(currentPlayer.get文明所需的笑臉());
                 break;
             case 9999:
-                getP1().do更新文明板塊上所提供的數據();
+                getP1().sub更新文明板塊上所提供的數據();
                 break;
             case 1005:
                 getP1().sub擴充人口();
@@ -2050,7 +2050,7 @@ public class Ages implements AgesCommon {
 //    
 //}
 
-        public void do更新文明板塊上所提供的數據() {
+        public void sub更新文明板塊上所提供的數據() {
 //        暫存應用區
             int val = 0;
             int 內政點數val = 0;
@@ -2084,7 +2084,8 @@ public class Ages implements AgesCommon {
             暫存應用區.addAll(軍事區);
             for (int x = 0; x < 暫存應用區.size(); x++) {
 //            System.out.println(暫存應用區.get(x).getName());
-                switch (暫存應用區.get(x).getTag()) {
+                AgesCard card = 暫存應用區.get(x);
+                switch (card.getTag()) {
                     case "實驗室":
                     case "圖書館":
                     case "劇院":
@@ -2098,7 +2099,9 @@ public class Ages implements AgesCommon {
                             科技增加val = 科技增加val + (暫存應用區.get(x).getTokenYellow() * 暫存應用區.get(x).getEffectIdea());
                         }
                         if (暫存應用區.get(x).getEffectSmile() != 0) {
-                            System.out.println("有笑臉");
+                            int temp = (暫存應用區.get(x).getTokenYellow() * 暫存應用區.get(x).getEffectSmile());
+//                            showDebug("有笑臉..." + card.toString(STYLE_普通) + " val=" + temp);
+
                             笑臉val = 笑臉val + (暫存應用區.get(x).getTokenYellow() * 暫存應用區.get(x).getEffectSmile());
                         }
                         break;
@@ -2130,8 +2133,19 @@ public class Ages implements AgesCommon {
 //            System.out.println("目前的科技+是" + val);
 //            System.out.println("==========檢測結束==========");
 //        }
-            this.科技生產_當回合.setVal(科技增加val);
-            this.笑臉_幸福指數.setVal(笑臉val);
+            int old科技生產_當回合 = 科技生產_當回合.getVal();
+            int old笑臉_幸福指數 = 笑臉_幸福指數.getVal();
+
+            if (old科技生產_當回合 != 科技增加val) {
+                科技生產_當回合.setVal(科技增加val);
+                showDebug("科技生產_當回合 " + old科技生產_當回合 + " => " + 科技增加val);
+            }
+
+            if (old笑臉_幸福指數 != 笑臉val) {
+                笑臉_幸福指數.setVal(笑臉val);
+                showDebug("笑臉_幸福指數 " + old笑臉_幸福指數 + " => " + 笑臉val);
+
+            }
         }
 
 //        public void init建造中的奇蹟區() {
@@ -2697,6 +2711,11 @@ public class Ages implements AgesCommon {
         }
 
         public boolean act建造(int id) {
+            if (isBuild實驗室神廟(id)) {
+                showDebug("TARGET ID IS IN 實驗室神廟");
+                return act建造實驗室神廟(id);
+            }
+            showDebug("TARGET ID IS NOT IN 實驗室神廟");
             if (isBuild農場礦山(id)) {
                 showDebug("TARGET ID IS IN 農場礦山");
                 return act建造農場礦山(id);
@@ -2800,10 +2819,22 @@ public class Ages implements AgesCommon {
             card.setTokenBlue(card.getTokenBlue() + amount);
             get資源庫_藍點().addPoints(-amount);
 
-            showDebug(" after " + card.toString(STYLE_普通_藍點) );
+            showDebug(" after " + card.toString(STYLE_普通_藍點));
             showDebug(" after 資源庫_藍點=" + get資源庫_藍點().getVal());
 
 //            System.out.println("move藍點From資源庫To卡牌" + card.toString(STYLE_普通));
+        }
+
+        public boolean isBuild實驗室神廟(int id) {
+            List<AgesCard> buildList = new ArrayList<>();
+            buildList.addAll(實驗室);
+            buildList.addAll(神廟區);
+            for (AgesCard card : buildList) {
+                if (card.getId() == id) {//找到目標的牌
+                    return true;
+                }
+            }
+            return false;
         }
 
         public boolean isBuild農場礦山(int id) {
@@ -2828,6 +2859,41 @@ public class Ages implements AgesCommon {
             }
 //            showWhyNoAction(ReasonWhyNoAction.NOT_THE_奇蹟CARD_UNDER_CONSTRUCTION);
             return false;
+        }
+//實驗室神廟
+
+        public AgesCard chk實驗室神廟(int id) {
+            List<AgesCard> buildList = new ArrayList<>();
+            int required內政點數 = 1;
+            int required資源 = 999;
+
+            buildList.addAll(實驗室);
+            buildList.addAll(神廟區);
+            for (AgesCard card : buildList) {
+                if (card.getId() == id) {//找到目標的牌
+                    if (currentPlayer.內政點數.getVal() < required內政點數) {
+//                        System.out.println("no action, 你沒有內政點數");
+                        showWhyNoAction(ReasonWhyNoAction.內政點數不够);
+                        break;
+                    }
+
+                    required資源 = card.getCostStone();
+
+                    if (currentPlayer.getAvailable資源() < required資源) {
+//                        System.out.println("no action, 你沒有足夠的資源. available資源" + currentPlayer.getAvailable資源() + "< requried資源" + card.getCostStone());
+                        showWhyNoAction(ReasonWhyNoAction.資源不够);
+                        break;
+                    }
+                    if (currentPlayer.工人區_黃點.getVal() < 1) {
+//                        System.out.println("no action, 你的工人區【黃】沒人");
+                        showWhyNoAction(ReasonWhyNoAction.你的工人區沒人);
+                        break;
+                    }
+                    return card;
+                }
+            }
+            return NOCARD_HERE;
+
         }
 
         public AgesCard chk建造農場礦山(int id) {
@@ -2858,6 +2924,45 @@ public class Ages implements AgesCommon {
                 }
             }
             return NOCARD_HERE;
+
+        }
+
+        //實驗室神廟
+        public boolean act建造實驗室神廟(int id) {
+            AgesCard card = chk實驗室神廟(id);
+
+            if (card.isNOCARD()) {
+                return false;
+            }
+
+            int currentBldgCnt = card.getTokenYellow();
+            int maxBldgCnt = get建築上限().getVal();
+            if (currentBldgCnt == maxBldgCnt) {
+                showWhyNoAction(ReasonWhyNoAction.ALREADY_ON_MAX_BLDG_CNT);
+                return false;
+            }
+
+            if (內政點數.getVal() < 1) {
+                showWhyNoAction(ReasonWhyNoAction.內政點數不够);
+                return false;
+            }
+
+//            int required資源 = wonderStages.get(0).intValue();
+            int required資源 = card.getCostStone();
+            if (getAvailable資源() < required資源) {
+                showWhyNoAction(ReasonWhyNoAction.資源不够);
+                showDebug(" REQUIRED: " + required資源);
+                showDebug(" YOU ONLY HAVE 資源 " + currentPlayer.getAvailable資源());
+                return false;
+            }
+
+            if (工人區_黃點.getVal() < 1) {
+                showWhyNoAction(ReasonWhyNoAction.你的工人區沒人);
+                return false;
+            }
+
+            sub建造實驗室神廟(card);
+            return true;
 
         }
 
@@ -2893,6 +2998,22 @@ public class Ages implements AgesCommon {
         public void subMove卡牌黃點to卡牌(AgesCard cardFrom, AgesCard cardTo) {
             cardFrom.setTokenYellow(cardFrom.getTokenYellow() - 1);//指定的卡上黃點+1
             cardTo.setTokenYellow(cardTo.getTokenYellow() + 1);//指定的卡上黃點+1
+
+        }
+
+        public void sub建造實驗室神廟(AgesCard card) {
+
+            // 1.支付1點內政點數
+            sub支付內政點數(1);
+
+            // 2.支付指定數量的资源    
+//            subMove卡牌藍點to資源庫(card, card.getCostStone());
+            sub支付資源(card.getCostStone());
+
+            // 3.黃點
+            subMove工人區黃點to卡牌(card);
+//            sub
+            sub更新文明板塊上所提供的數據();
 
         }
 
@@ -3511,9 +3632,13 @@ public class Ages implements AgesCommon {
 
                 case "實驗室":
                 case "神廟區":
+                case "步兵區":
+                    showNewLine();
+                    showSectorStyle(list, title, STYLE_普通_黃點);
+                    break;
+
                 case "農場區":
                 case "礦山區":
-                case "步兵區":
 
                     showNewLine();
                     showSectorStyle(list, title, STYLE_實驗室);

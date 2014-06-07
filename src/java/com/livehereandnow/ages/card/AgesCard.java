@@ -810,6 +810,22 @@ public boolean isNOCARD() {
         sb.append("】");
         return sb.toString();
     }
+private String toString普通_黃點() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("【");
+//        sb.append(AGE_NAME[age]);
+        sb.append("");
+        sb.append(id);
+        sb.append(name);
+//        sb.append(FULLWIDTH_SPACE).append(tag);
+//        sb.append(FULLWIDTH_SPACE).append("成本{").append(iconPoints).append("}");
+//        sb.append(FULLWIDTH_SPACE).append("效果{").append(effect).append("}");
+//     
+        sb.append(FULLWIDTH_SPACE).append("黃").append(FULLWIDTH_COLON).append(tokenYellow);
+
+        sb.append("】");
+        return sb.toString();
+    }
 
     public String toString(int style) {
 
@@ -828,6 +844,8 @@ public boolean isNOCARD() {
                 return toString行動牌();
             case STYLE_普通_藍點:
                 return toString普通_藍點();
+            case STYLE_普通_黃點:
+                return toString普通_黃點();
             default:
                 return toStringSimple();
         }

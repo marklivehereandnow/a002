@@ -11,12 +11,14 @@ package com.livehereandnow.ages.card;
  */
 public enum ReasonWhyNoAction {
 
+    ALREADY_ON_MAX_BLDG_CNT,
     按遊戲規則_第一回合_只能拿牌_不能做建造,
     GAME_IS_NOT_STARTED_YET,
     NOT_VALID_INDEX_FROM_CARDROW,
     內政點數不够,
     資源不够,
     拿了重複的科技牌,
+    你的工人區沒人,
     UNDER_CONSTRUCTION_IS_NOT_EMPTY,
     NOT_THE_奇蹟CARD_UNDER_CONSTRUCTION,
     NOT_YET_DEFINED;
