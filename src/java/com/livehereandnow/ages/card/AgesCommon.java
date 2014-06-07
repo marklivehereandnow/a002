@@ -10,6 +10,19 @@ package com.livehereandnow.ages.card;
  * @author mark
  */
 public interface AgesCommon {
+    String[] REASON_WHY={
+        "Game is not started yet!",
+    "First round is only allow to take, not to build"
+    
+    };
+    int REASON_GAME_NOT_YET_STARTED=0;
+    int REASON_FIRST_ROUND_NOT_ALLOW_TO_BUILD=1;
+//    int
+//    int NO_ACTION_REASON_GAME_NOT_YET_STARTED=1;
+    
+    
+    
+    
     int[] COST_OF_TAKING_CARD_FROM_CARDROW = {1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
  
 //    String[] 階段={"unknown","xxx","yyy"};
