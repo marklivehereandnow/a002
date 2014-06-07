@@ -985,7 +985,7 @@ public class Ages implements AgesCommon {
 
         // to perform action and make transaction
         sub拿牌(index, card, cost);
-
+        showDoneDescription(DoneDescription.TAKE_CARD_SUCCESSFULLY);
         return true;
     }
 
@@ -1002,7 +1002,7 @@ public class Ages implements AgesCommon {
     private void sub在卡牌列拿掉指定位子的卡牌and補上一張空卡牌(int index) {
         field.getCardRow().remove(index);//從卡牌列拿掉剛剛那張card
         field.getCardRow().add(index, field.getNOCARD());//在卡牌列同樣的位子，補上一張空卡
-        System.out.println("卡牌列, index=" + index + " is 空卡牌 now!");
+//        System.out.println("卡牌列, index=" + index + " is 空卡牌 now!");
     }
 
 //    private void sub支付內政點數(int cost) {
@@ -1350,12 +1350,15 @@ public class Ages implements AgesCommon {
 //        System.out.println("按卡號build,適合所有的情況, including 奇蹟區");
 //        我無法作出這個動作
         if (this.get當前回合() == 0) {
-            System.out.println("no action, GAME IS NOT YET STARTED!");
+//            System.out.println("no action, GAME IS NOT YET STARTED!");
+            showWhyNoAction(ReasonWhyNoAction.GAME_IS_NOT_STARTED_YET);
+
             return false;
         }
 
         if (this.get當前回合() == 1) {
-            System.out.println("no action, 按遊戲規則:第一回合，只能拿牌，不能做建造");
+//            System.out.println("no action, 按遊戲規則:第一回合，只能拿牌，不能做建造");
+            showWhyNoAction(ReasonWhyNoAction.按遊戲規則_第一回合_只能拿牌_不能做建造);
             return false;
         }
 
@@ -1985,7 +1988,9 @@ public class Ages implements AgesCommon {
         }
 
         public void sub支付內政點數(int cost) {
+            int old內政點數=內政點數.getVal();
             內政點數.addPoints((-1) * cost);
+            showDebug("內政點數 "+old內政點數+" => "+ 內政點數.getVal());
         }
 
         public Points get內政點數() {
@@ -2450,7 +2455,7 @@ public class Ages implements AgesCommon {
             if (val < 0) {
                 sub獲得資源(-val);
             }
-            System.out.println("done, 支付資源:" + amt);
+//            System.out.println("done, 支付資源:" + amt);
         }
 
         public void set額外用於建造軍事單位的資源(Points 額外用於建造軍事單位的資源) {
@@ -2694,13 +2699,13 @@ public class Ages implements AgesCommon {
                 showDebug("TARGET ID IS IN 農場礦山");
                 return act建造農場礦山(id);
             }
-            System.out.println("TARGET ID IS NOT IN 農場礦山");
+            showDebug("TARGET ID IS NOT IN 農場礦山");
 
             if (isBuild奇蹟(id)) {
                 showDebug("TARGET ID IS IN 奇蹟");
                 return actBuild奇蹟();
             }
-            System.out.println("TARGET ID IS NOT IN 奇蹟");
+            showDebug("TARGET ID IS NOT IN 奇蹟");
 
             return false;
 //            this.actBuild奇蹟(id);
@@ -2744,19 +2749,23 @@ public class Ages implements AgesCommon {
             sub支付資源(required資源);
             subMove資源庫藍點to卡牌(card, 1);
             sub支付內政點數(1);
-
+            showDoneDescription(DoneDescription.BUILD_ONE_STAGE_WONDER);
             if (getHowManyMoreStage建造奇蹟() == 0) {
 //                System.out.println("going to move " + card.getTokenBlue() + "藍點From卡牌To資源庫");
 //                    for (int k = 0; k < card.getTokenBlue(); k++) {
-                showDoneDescription(DoneDescription.COMPLETE_ONE_WONDER);
                 subMove卡牌藍點to資源庫(card, card.getTokenBlue());
 //                    }
 
                 moveOneCard(建造中的奇蹟區, 0, 已完成的奇蹟);
-//                System.out.println("TRANSFER THIS WONDER FROM 建造中的奇蹟區 TO 已完成的奇蹟 ");
+                showDoneDescription(DoneDescription.COMPLETE_ONE_WONDER);
 
+//                System.out.println("TRANSFER THIS WONDER FROM 建造中的奇蹟區 TO 已完成的奇蹟 ");
 //                int temp = 內政手牌上限.getVal();
                 subUpdate手牌上限();
+                if (card.getName().equals("金字塔")) {
+                    sub支付內政點數(-1);//
+                    showDebug("JUST FINISH 金字塔, TAKE ONE MORE WHITE TOKEN INTO THE GAME");
+                }
 //                    
 //                if (內政手牌上限.getVal() != temp) {
 //                    System.out.println("************* 內政手牌上限 HAS BEEN CHANGED , SHOULD WE ADD 內政點數 TOKEN NOW?????");
@@ -2765,7 +2774,7 @@ public class Ages implements AgesCommon {
 //                    System.out.println("內政點數也要+1，如同在遊戲盒裡拿出一個白色標記");
 //                }
             }
-            System.out.println("done, build 奇蹟 ONE STAGE ");
+//            System.out.println("done, build 奇蹟 ONE STAGE ");
             return true;//一次只操作一張牌，找到後返回
 
         }
@@ -3412,14 +3421,17 @@ public class Ages implements AgesCommon {
             if (old內政手牌上限 != white) {
                 內政手牌上限.setVal(white);
                 showDoneDescription(DoneDescription.內政手牌上限_UPDATED);
+                showDebug(old內政手牌上限 + " => " + white);
             }
             if (old軍事手牌上限 != red) {
                 軍事手牌上限.setVal(red);
                 showDoneDescription(DoneDescription.軍事手牌上限_UPDATED);
+                showDebug(old軍事手牌上限 + " => " + red);
             }
             if (old建築上限 != house) {
                 建築上限.setVal(house);
                 showDoneDescription(DoneDescription.建築上限_UPDATED);
+                showDebug(old建築上限 + " => " + house);
             }
 //        System.out.println("內政手牌上限，軍事手牌上限剛剛更新");
         }

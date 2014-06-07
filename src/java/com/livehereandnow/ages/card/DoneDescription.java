@@ -11,6 +11,7 @@ package com.livehereandnow.ages.card;
  * @author mark
  */
 public enum DoneDescription {
+    TAKE_CARD_SUCCESSFULLY,
     BUILD_ONE_STAGE_WONDER,
     COMPLETE_ONE_WONDER,
     內政手牌上限_UPDATED,

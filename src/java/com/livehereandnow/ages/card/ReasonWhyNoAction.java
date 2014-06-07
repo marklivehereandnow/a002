@@ -11,6 +11,7 @@ package com.livehereandnow.ages.card;
  */
 public enum ReasonWhyNoAction {
 
+    按遊戲規則_第一回合_只能拿牌_不能做建造,
     GAME_IS_NOT_STARTED_YET,
     NOT_VALID_INDEX_FROM_CARDROW,
     內政點數不够,
